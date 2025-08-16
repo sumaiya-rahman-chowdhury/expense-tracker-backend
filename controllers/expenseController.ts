@@ -76,3 +76,27 @@ export const deleteExpense = async (req: Request, res: Response) => {
     res.status(500).json({ message: (error as Error).message });
   }
 };
+export const getTotalExpenses = async (req: Request, res: Response) => {
+  try {
+    const result = await Expense.aggregate([
+      { $match: { user: req.user._id } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+
+    res.json({ total: result[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+export const getExpensesByCategory = async (req: Request, res: Response) => {
+  try {
+    const stats = await Expense.aggregate([
+      { $match: { user: req.user._id } },
+      { $group: { _id: "$category", total: { $sum: "$amount" } } }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
