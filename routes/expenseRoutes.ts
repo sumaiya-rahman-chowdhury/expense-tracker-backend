@@ -6,6 +6,7 @@ import {
   deleteExpense,
   getTotalExpenses,
   getExpensesByCategory,
+  getExpenseById,
 } from "../controllers/expenseController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -18,6 +19,7 @@ router.get("/", getExpenses);
 router.patch("/:id", updateExpense);
 router.delete("/:id", deleteExpense);
 router.get("/total", getTotalExpenses);
+router.get("/:id", getExpenseById);
 router.get("/stats/category", getExpensesByCategory);
 
 

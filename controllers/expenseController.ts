@@ -100,3 +100,19 @@ export const getExpensesByCategory = async (req: Request, res: Response) => {
     res.status(500).json({ message: (error as Error).message });
   }
 };
+export const getExpenseById = async (req: Request, res: Response) => {
+  try {
+    const expense = await Expense.findOne({
+      _id: req.params.id,
+      user: req.user._id, 
+    });
+
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found or not authorized" });
+    }
+
+    res.json(expense);
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
