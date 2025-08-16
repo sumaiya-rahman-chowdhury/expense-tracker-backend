@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import Expense from "../models/expenseModel";
+import Expense, { IExpense } from "../models/expenseModel";
+import { FilterQuery, Types } from "mongoose";
 
 export const addExpense = async (req: Request, res: Response) => {
   try {
@@ -10,7 +11,7 @@ export const addExpense = async (req: Request, res: Response) => {
       amount,
       category,
       date,
-      user: req.user._id, 
+      user: req.user._id,
     });
 
     res.status(201).json(expense);
@@ -21,7 +22,16 @@ export const addExpense = async (req: Request, res: Response) => {
 
 export const getExpenses = async (req: Request, res: Response) => {
   try {
-    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
+    const { category, start, end } = req.query;
+    const userId = req.user!._id as Types.ObjectId;
+    const filter: FilterQuery<IExpense> = { user: userId };
+    if (category) filter.category = category as string;
+    if (start || end) {
+      filter.date = {};
+      if (start) filter.date.$gte = new Date(start as string);
+      if (end) filter.date.$lte = new Date(end as string);
+    }
+    const expenses = await Expense.find(filter).sort({ date: -1 });
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
@@ -37,7 +47,9 @@ export const updateExpense = async (req: Request, res: Response) => {
     );
 
     if (!expense) {
-      return res.status(404).json({ message: "Expense not found or not authorized" });
+      return res
+        .status(404)
+        .json({ message: "Expense not found or not authorized" });
     }
 
     res.json(expense);
@@ -54,7 +66,9 @@ export const deleteExpense = async (req: Request, res: Response) => {
     });
 
     if (!expense) {
-      return res.status(404).json({ message: "Expense not found or not authorized" });
+      return res
+        .status(404)
+        .json({ message: "Expense not found or not authorized" });
     }
 
     res.json({ message: "Expense deleted" });
